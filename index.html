@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BR Sound Mod Builder</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<style>
+  :root {
+    --bg: #0f1117;
+    --surface: #181c27;
+    --surface2: #1e2333;
+    --border: rgba(255,255,255,0.08);
+    --border-hover: rgba(255,255,255,0.18);
+    --accent: #f4a84a;
+    --accent-dim: rgba(244,168,74,0.12);
+    --accent-border: rgba(244,168,74,0.35);
+    --text: #e8eaf0;
+    --muted: #7a8099;
+    --muted2: #50566e;
+    --success: #4ade80;
+    --success-dim: rgba(74,222,128,0.1);
+    --success-border: rgba(74,222,128,0.3);
+    --danger: #f87171;
+    --danger-dim: rgba(248,113,113,0.1);
+    --radius: 10px;
+    --radius-lg: 14px;
+    --font: 'Space Grotesk', sans-serif;
+    --mono: 'Space Mono', monospace;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { font-size: 15px; }
+  body {
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    line-height: 1.6;
+  }
+
+  /* Header */
+  .site-header {
+    border-bottom: 1px solid var(--border);
+    padding: 0 2rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    height: 56px;
+  }
+  .logo-mark {
+    width: 30px; height: 30px;
+    background: var(--accent);
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .logo-mark svg { width: 18px; height: 18px; }
+  .logo-text { font-family: var(--mono); font-size: 13px; font-weight: 700; letter-spacing: .02em; }
+  .logo-text span { color: var(--accent); }
+  .header-badge {
+    margin-left: auto;
+    font-size: 11px;
+    font-family: var(--mono);
+    color: var(--muted);
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    padding: 3px 10px;
+  }
+
+  /* Hero */
+  .hero {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 3.5rem 2rem 2rem;
+    text-align: center;
+  }
+  .hero-eyebrow {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: .1em;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+  }
+  .hero h1 {
+    font-size: clamp(1.8rem, 5vw, 2.8rem);
+    font-weight: 600;
+    line-height: 1.15;
+    margin-bottom: 1rem;
+    letter-spacing: -.02em;
+  }
+  .hero h1 em {
+    font-style: normal;
+    color: var(--accent);
+  }
+  .hero-sub {
+    font-size: 15px;
+    color: var(--muted);
+    max-width: 500px;
+    margin: 0 auto 2rem;
+  }
+  .how-it-works {
+    display: flex;
+    justify-content: center;
+    gap: 0;
+    font-size: 12px;
+    font-family: var(--mono);
+    color: var(--muted);
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-bottom: 2.5rem;
+  }
+  .hw-step {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 5px 12px;
+    white-space: nowrap;
+  }
+  .hw-step.accent-step { border-color: var(--accent-border); color: var(--accent); }
+  .hw-arrow { color: var(--muted2); display: flex; align-items: center; padding: 0 2px; }
+
+  /* Main layout */
+  .main { max-width: 720px; margin: 0 auto; padding: 0 2rem 4rem; }
+
+  /* Sections */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+  }
+  .card-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .card-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* Form fields */
+  .field-row {
+    display: grid;
+    grid-template-columns: 110px 1fr;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 10px;
+  }
+  .field-row:last-child { margin-bottom: 0; }
+  .field-label { font-size: 13px; color: var(--muted); }
+  input[type=text], select {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text);
+    font-family: var(--font);
+    font-size: 14px;
+    height: 38px;
+    padding: 0 12px;
+    width: 100%;
+    transition: border-color .15s;
+  }
+  input[type=text]:focus, select:focus {
+    outline: none;
+    border-color: var(--accent-border);
+  }
+  select { cursor: pointer; }
+  input[type=text]::placeholder { color: var(--muted2); }
+
+  /* Route cards */
+  .routes-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 12px; }
+  .route-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    transition: border-color .15s;
+  }
+  .route-card:hover { border-color: var(--border-hover); }
+  .route-card-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: .75rem 1rem;
+    border-bottom: 1px solid var(--border);
+    background: rgba(255,255,255,0.02);
+  }
+  .route-index {
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--accent);
+    background: var(--accent-dim);
+    border: 1px solid var(--accent-border);
+    border-radius: 5px;
+    padding: 2px 8px;
+    flex-shrink: 0;
+  }
+  .route-title-preview { font-size: 13px; color: var(--muted); flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .route-del {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--muted2);
+    font-size: 18px;
+    padding: 2px 6px;
+    border-radius: 6px;
+    line-height: 1;
+    transition: background .12s, color .12s;
+  }
+  .route-del:hover { background: var(--danger-dim); color: var(--danger); }
+  .route-card-body { padding: 1rem; }
+  .route-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  .route-grid.triple { grid-template-columns: 1fr 1fr auto; align-items: end; }
+  .field-block label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 5px; font-family: var(--mono); }
+
+  /* Drop zone */
+  .drop-zone {
+    border: 1px dashed var(--border-hover);
+    border-radius: var(--radius);
+    padding: .85rem;
+    text-align: center;
+    cursor: pointer;
+    color: var(--muted);
+    font-size: 13px;
+    transition: all .15s;
+    position: relative;
+  }
+  .drop-zone:hover, .drop-zone.drag-over {
+    background: var(--accent-dim);
+    border-color: var(--accent-border);
+    color: var(--accent);
+  }
+  .drop-zone.has-file {
+    background: var(--success-dim);
+    border-color: var(--success-border);
+    color: var(--success);
+    border-style: solid;
+  }
+  .drop-zone-icon { font-size: 22px; margin-bottom: 4px; }
+  .drop-zone input[type=file] { display: none; }
+
+  audio {
+    width: 100%;
+    height: 30px;
+    margin-top: 8px;
+    border-radius: 6px;
+    accent-color: var(--accent);
+  }
+
+  /* Key badge select */
+  .key-select-wrap { position: relative; }
+  .key-select-wrap select {
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 15px;
+    text-align: center;
+    padding: 0 8px;
+    width: 72px;
+    color: var(--accent);
+    background: var(--accent-dim);
+    border-color: var(--accent-border);
+  }
+
+  /* Add route btn */
+  .add-route-btn {
+    width: 100%;
+    background: none;
+    border: 1px dashed var(--border-hover);
+    border-radius: var(--radius-lg);
+    color: var(--muted);
+    font-family: var(--font);
+    font-size: 14px;
+    padding: 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all .15s;
+  }
+  .add-route-btn:hover {
+    border-color: var(--accent-border);
+    color: var(--accent);
+    background: var(--accent-dim);
+  }
+
+  /* Build button */
+  .build-section { margin-top: 1.5rem; }
+  .build-btn {
+    width: 100%;
+    background: var(--accent);
+    border: none;
+    border-radius: var(--radius-lg);
+    color: #0f1117;
+    font-family: var(--font);
+    font-size: 16px;
+    font-weight: 600;
+    padding: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: opacity .15s, transform .1s;
+  }
+  .build-btn:hover { opacity: .92; }
+  .build-btn:active { transform: scale(.99); }
+  .build-btn:disabled { opacity: .4; cursor: not-allowed; transform: none; }
+  .build-btn svg { width: 20px; height: 20px; flex-shrink: 0; }
+
+  /* Status */
+  .status-bar {
+    margin-top: 10px;
+    font-size: 13px;
+    font-family: var(--mono);
+    text-align: center;
+    min-height: 20px;
+    color: var(--muted);
+  }
+  .status-bar.ok { color: var(--success); }
+  .status-bar.err { color: var(--danger); }
+
+  /* Info callout */
+  .callout {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 var(--radius) var(--radius) 0;
+    padding: .8rem 1rem;
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 1rem;
+    line-height: 1.6;
+  }
+  .callout strong { color: var(--text); font-weight: 500; }
+
+  /* Footer */
+  .site-footer {
+    border-top: 1px solid var(--border);
+    padding: 1.5rem 2rem;
+    text-align: center;
+    font-size: 12px;
+    font-family: var(--mono);
+    color: var(--muted2);
+  }
+  .site-footer a { color: var(--muted); text-decoration: none; }
+  .site-footer a:hover { color: var(--accent); }
+
+  /* Empty state */
+  .empty-state {
+    text-align: center;
+    padding: 2rem 1rem;
+    color: var(--muted2);
+    font-size: 13px;
+  }
+  .empty-state-icon { font-size: 2rem; margin-bottom: .5rem; opacity: .4; }
+
+  /* Progress bar */
+  .progress-wrap { margin-top: 10px; display: none; }
+  .progress-wrap.visible { display: block; }
+  .progress-bar-track {
+    height: 4px;
+    background: var(--surface2);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .progress-bar-fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 2px;
+    transition: width .2s;
+    width: 0%;
+  }
+
+  @media (max-width: 520px) {
+    .hero { padding: 2rem 1.25rem 1.5rem; }
+    .main { padding: 0 1.25rem 3rem; }
+    .route-grid { grid-template-columns: 1fr; }
+    .route-grid.triple { grid-template-columns: 1fr 1fr; }
+    .field-row { grid-template-columns: 90px 1fr; }
+    .site-header { padding: 0 1.25rem; }
+    .how-it-works { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="logo-mark" aria-hidden="true">
+    <svg viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="2" y="8" width="14" height="7" rx="2" fill="#0f1117"/>
+      <path d="M5 8V6a4 4 0 018 0v2" stroke="#0f1117" stroke-width="2" stroke-linecap="round"/>
+      <circle cx="9" cy="11.5" r="1.5" fill="#0f1117"/>
+    </svg>
+  </div>
+  <span class="logo-text">BR <span>Sound</span> Mod Builder</span>
+  <span class="header-badge">free &amp; runs in browser</span>
+</header>
+
+<section class="hero">
+  <p class="hero-eyebrow">Brick Rigs · Custom Sound Mods</p>
+  <h1>Bus &amp; train announcements,<br><em>the easy way.</em></h1>
+  <p class="hero-sub">Add your MP3s, set your routes, and download a ready-to-install mod folder. No installs. No server. Runs entirely in your browser.</p>
+  <div class="how-it-works" aria-label="How it works">
+    <span class="hw-step">Upload MP3s</span>
+    <span class="hw-arrow">→</span>
+    <span class="hw-step">Set route names &amp; keys</span>
+    <span class="hw-arrow">→</span>
+    <span class="hw-step accent-step">Download mod zip</span>
+    <span class="hw-arrow">→</span>
+    <span class="hw-step">Import into UE4 → .pak</span>
+  </div>
+</section>
+
+<main class="main">
+
+  <div class="callout">
+    <strong>How the in-game trigger works:</strong> each route gets an input channel. Press the key → the door hinge opens <em>and</em> a Siren brick plays your announcement. Wiring instructions are included in the downloaded README.
+  </div>
+
+  <!-- Mod info -->
+  <div class="card">
+    <div class="card-label">Mod info</div>
+    <div class="field-row">
+      <span class="field-label">Mod name</span>
+      <input type="text" id="mod-name" value="BusAnnouncements" placeholder="e.g. Route43C_Pack">
+    </div>
+    <div class="field-row">
+      <span class="field-label">Author</span>
+      <input type="text" id="mod-author" placeholder="Your name (optional)">
+    </div>
+    <div class="field-row">
+      <span class="field-label">Version</span>
+      <input type="text" id="mod-version" value="1.0" style="max-width:80px">
+    </div>
+  </div>
+
+  <!-- Routes -->
+  <div class="card">
+    <div class="card-label">Routes &amp; sounds</div>
+    <div class="routes-list" id="routes-list">
+      <div class="empty-state">
+        <div class="empty-state-icon">🚌</div>
+        Add your first route below
+      </div>
+    </div>
+    <button class="add-route-btn" onclick="addRoute()">
+      <svg viewBox="0 0 20 20" fill="none" width="16" height="16"><path d="M10 4v12M4 10h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      Add route
+    </button>
+  </div>
+
+  <!-- Build -->
+  <div class="build-section">
+    <button class="build-btn" id="build-btn" onclick="buildZip()">
+      <svg viewBox="0 0 20 20" fill="none"><path d="M10 3v10M6 9l4 4 4-4M4 15h12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Download mod zip
+    </button>
+    <div class="progress-wrap" id="progress-wrap">
+      <div class="progress-bar-track"><div class="progress-bar-fill" id="progress-fill"></div></div>
+    </div>
+    <div class="status-bar" id="status-bar"></div>
+  </div>
+
+</main>
+
+<footer class="site-footer">
+  BR Sound Mod Builder &mdash; runs entirely in your browser, nothing is uploaded anywhere &mdash;
+  <a href="https://store.steampowered.com/app/552100/Brick_Rigs/" target="_blank" rel="noopener">Brick Rigs on Steam</a>
+</footer>
+
+<script>
+const KEYS = ['X','Z','C','V','B','N','M','F1','F2','F3','F4','F5','1','2','3','4','5','6','7','8'];
+let routes = [];
+let uid = 0;
+
+function addRoute(preset) {
+  const id = ++uid;
+  routes.push({ id, name: preset?.name||'', dest: preset?.dest||'', key: preset?.key||'X', file: null, fname: '', blobURL: null });
+  render();
+  setTimeout(() => {
+    const el = document.getElementById('rname-'+id);
+    if (el) el.focus();
+  }, 50);
+}
+
+function removeRoute(id) {
+  const r = routes.find(x=>x.id===id);
+  if (r?.blobURL) URL.revokeObjectURL(r.blobURL);
+  routes = routes.filter(x=>x.id!==id);
+  render();
+}
+
+function setField(id, field, val) {
+  const r = routes.find(x=>x.id===id);
+  if (r) { r[field]=val; updatePreview(id); }
+}
+
+function updatePreview(id) {
+  const r = routes.find(x=>x.id===id);
+  if (!r) return;
+  const el = document.getElementById('preview-'+id);
+  if (!el) return;
+  const label = [r.name, r.dest].filter(Boolean).join(' → ') || 'Unnamed route';
+  el.textContent = label;
+}
+
+function handleFile(file, id) {
+  if (!file) return;
+  const r = routes.find(x=>x.id===id);
+  if (!r) return;
+  if (r.blobURL) URL.revokeObjectURL(r.blobURL);
+  r.file = file; r.fname = file.name;
+  r.blobURL = URL.createObjectURL(file);
+  renderRoute(id);
+}
+
+function handleDrop(e, id) {
+  e.preventDefault();
+  document.getElementById('dz-'+id)?.classList.remove('drag-over');
+  const f = e.dataTransfer.files[0];
+  if (f && f.type.startsWith('audio/')) handleFile(f, id);
+}
+
+function esc(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function safe(s) { return (s||'unnamed').replace(/[^a-zA-Z0-9_\-]/g,'_').replace(/_+/g,'_').replace(/^_|_$/g,''); }
+
+function renderRoute(id) {
+  const r = routes.find(x=>x.id===id);
+  if (!r) return;
+  const el = document.getElementById('rc-'+id);
+  if (!el) return;
+  el.outerHTML = routeHTML(r, routes.indexOf(r));
+  bindRouteEvents(id);
+}
+
+function bindRouteEvents(id) {
+  const dz = document.getElementById('dz-'+id);
+  if (!dz) return;
+  dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('drag-over'); });
+  dz.addEventListener('dragleave', () => dz.classList.remove('drag-over'));
+  dz.addEventListener('drop', e => handleDrop(e, id));
+}
+
+function routeHTML(r, i) {
+  const label = [r.name, r.dest].filter(Boolean).join(' → ') || 'Unnamed route';
+  const dzClass = r.file ? 'drop-zone has-file' : 'drop-zone';
+  const dzText = r.file
+    ? `<div class="drop-zone-icon">✔</div>${esc(r.fname)}`
+    : `<div class="drop-zone-icon">🎵</div>Click or drop an MP3 / WAV here`;
+  return `<div class="route-card" id="rc-${r.id}">
+    <div class="route-card-header">
+      <span class="route-index">route ${i+1}</span>
+      <span class="route-title-preview" id="preview-${r.id}">${esc(label)}</span>
+      <button class="route-del" onclick="removeRoute(${r.id})" title="Remove route" aria-label="Remove route ${i+1}">×</button>
+    </div>
+    <div class="route-card-body">
+      <div class="route-grid">
+        <div class="field-block">
+          <label for="rname-${r.id}">Route number / name</label>
+          <input type="text" id="rname-${r.id}" value="${esc(r.name)}" placeholder="e.g. 43C" oninput="setField(${r.id},'name',this.value)">
+        </div>
+        <div class="field-block">
+          <label for="rdest-${r.id}">Destination</label>
+          <input type="text" id="rdest-${r.id}" value="${esc(r.dest)}" placeholder="e.g. Denton" oninput="setField(${r.id},'dest',this.value)">
+        </div>
+      </div>
+      <div class="field-block" style="margin-bottom:10px">
+        <label for="rkey-${r.id}">Trigger key <span style="color:var(--muted2);font-weight:400">(bind this key to the door channel in BR)</span></label>
+        <div class="key-select-wrap" style="display:inline-block">
+          <select id="rkey-${r.id}" onchange="setField(${r.id},'key',this.value)">
+            ${KEYS.map(k=>`<option value="${k}"${r.key===k?' selected':''}>${k}</option>`).join('')}
+          </select>
+        </div>
+      </div>
+      <div class="${dzClass}" id="dz-${r.id}" onclick="document.getElementById('fi-${r.id}').click()" role="button" tabindex="0" aria-label="Upload audio file for route ${i+1}">
+        <input type="file" id="fi-${r.id}" accept="audio/*" onchange="handleFile(this.files[0],${r.id})">
+        ${dzText}
+      </div>
+      ${r.blobURL ? `<audio controls src="${esc(r.blobURL)}"></audio>` : ''}
+    </div>
+  </div>`;
+}
+
+function render() {
+  const list = document.getElementById('routes-list');
+  if (!routes.length) {
+    list.innerHTML = `<div class="empty-state"><div class="empty-state-icon">🚌</div>Add your first route below</div>`;
+    return;
+  }
+  list.innerHTML = routes.map((r,i) => routeHTML(r,i)).join('');
+  routes.forEach(r => bindRouteEvents(r.id));
+}
+
+function setProgress(pct) {
+  document.getElementById('progress-fill').style.width = pct + '%';
+}
+
+function setStatus(msg, cls='') {
+  const el = document.getElementById('status-bar');
+  el.textContent = msg;
+  el.className = 'status-bar' + (cls ? ' '+cls : '');
+}
+
+async function convertToWav(file) {
+  return new Promise((resolve, reject) => {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 44100 });
+    const reader = new FileReader();
+    reader.onload = async e => {
+      try {
+        const ab = await ctx.decodeAudioData(e.target.result);
+        const samples = ab.length;
+        const buf = new ArrayBuffer(44 + samples * 2);
+        const v = new DataView(buf);
+        const ws = (o, s) => { for (let i=0;i<s.length;i++) v.setUint8(o+i, s.charCodeAt(i)); };
+        ws(0,'RIFF'); v.setUint32(4, 36+samples*2, true); ws(8,'WAVE');
+        ws(12,'fmt '); v.setUint32(16,16,true); v.setUint16(20,1,true); v.setUint16(22,1,true);
+        v.setUint32(24,44100,true); v.setUint32(28,88200,true); v.setUint16(32,2,true); v.setUint16(34,16,true);
+        ws(36,'data'); v.setUint32(40, samples*2, true);
+        const ch = ab.getChannelData(0);
+        for (let i=0, o=44; i<samples; i++, o+=2) {
+          const s = Math.max(-1, Math.min(1, ch[i]));
+          v.setInt16(o, s < 0 ? s*32768 : s*32767, true);
+        }
+        ctx.close();
+        resolve(new Blob([buf], { type: 'audio/wav' }));
+      } catch(err) { ctx.close(); reject(err); }
+    };
+    reader.onerror = reject;
+    reader.readAsArrayBuffer(file);
+  });
+}
+
+async function buildZip() {
+  const btn = document.getElementById('build-btn');
+  const pw = document.getElementById('progress-wrap');
+
+  if (!routes.length) { setStatus('Add at least one route first.', 'err'); return; }
+  const missing = routes.filter(r => !r.file);
+  if (missing.length) { setStatus(`Upload a sound file for every route (${missing.length} missing).`, 'err'); return; }
+
+  const modName = safe(document.getElementById('mod-name').value) || 'BRSoundMod';
+  const author = document.getElementById('mod-author').value || 'Unknown';
+  const version = document.getElementById('mod-version').value || '1.0';
+
+  btn.disabled = true;
+  pw.classList.add('visible');
+  setProgress(5);
+  setStatus('Building…');
+
+  try {
+    const zip = new JSZip();
+    const root = zip.folder(modName);
+    const srcFolder = root.folder('sounds_source');
+    const ue4Folder = root.folder('UE4_import').folder('BrickRigs').folder('Sounds').folder('Announcements');
+
+    const manifest = [];
+
+    for (let i=0; i<routes.length; i++) {
+      const r = routes[i];
+      setStatus(`Converting: ${r.fname}…`);
+      setProgress(10 + (i / routes.length) * 60);
+
+      const assetBase = safe(`Route_${r.name||i+1}_${r.dest||'Unknown'}`);
+      srcFolder.file(r.fname, r.file);
+
+      let wavBlob;
+      try { wavBlob = await convertToWav(r.file); }
+      catch(e) { wavBlob = r.file; }
+
+      ue4Folder.file(assetBase + '.wav', wavBlob);
+      manifest.push({ r, assetBase, ch: i+1 });
+    }
+
+    setStatus('Writing README…');
+    setProgress(75);
+
+    const lines = [
+      `# ${modName}`,
+      `**Author:** ${author}  |  **Version:** ${version}`,
+      `Generated by [BR Sound Mod Builder](https://github.com/)`,
+      ``,
+      `---`,
+      ``,
+      `## What's in this zip`,
+      ``,
+      `| Folder | Contents |`,
+      `|---|---|`,
+      `| \`sounds_source/\` | Your original audio files (keep these safe) |`,
+      `| \`UE4_import/\` | WAVs converted to 44100 Hz mono, ready to import into UE4 |`,
+      ``,
+      `---`,
+      ``,
+      `## Step 1 — Import into Unreal Engine 4.22.3`,
+      ``,
+      `1. Install **UE4 version 4.22.3** from the Epic Games Launcher → Library → + (engine versions).`,
+      `2. Create a new blank C++ or Blueprint project (no starter content is fine).`,
+      `3. In the **Content Browser**, create this exact folder path:`,
+      `   \`Content / BrickRigs / Sounds / Announcements\``,
+      `4. Drag all WAV files from \`UE4_import/BrickRigs/Sounds/Announcements/\` into that folder.`,
+      `   UE4 auto-creates **SoundWave** assets for each file.`,
+      `5. For each SoundWave, **right-click → Create SoundCue**.`,
+      `   In the SoundCue editor: wire **SoundWave node → Output node**, then save.`,
+      `   Name each SoundCue \`SC_<AssetName>\` (e.g. \`SC_Route_43C_Denton\`).`,
+      ``,
+      `---`,
+      ``,
+      `## Step 2 — Package as a .pak file`,
+      ``,
+      `1. In UE4: **File → Package Project → Windows (64-bit)**`,
+      `   *(or use UnrealPak directly — see the Brick Rigs Discord \`#mod-uploads\` for a guide)*`,
+      `2. Find the output \`.pak\` file and rename it to: \`${modName}_P.pak\``,
+      `3. Place it in:`,
+      `   \`Steam\\steamapps\\common\\Brick Rigs\\BrickRigs\\Content\\Paks\\~mods\\\``,
+      `   *(Create the \`~mods\` folder if it doesn't exist.)*`,
+      `4. Restart Brick Rigs.`,
+      ``,
+      `---`,
+      ``,
+      `## Step 3 — Wire up your vehicle in-game`,
+      ``,
+      `For **each route** listed below, do the following on your bus or train:`,
+      ``,
+      `1. Place a **Siren brick** on the vehicle.`,
+      `2. Set the Siren's **Sound** asset to the matching SoundCue (e.g. \`SC_Route_43C_Denton\`).`,
+      `3. Set the Siren's **input channel** to the channel number listed below.`,
+      `4. Set your **door hinge** to the same input channel.`,
+      `5. In the vehicle **seat input settings**, bind that channel number to the trigger key listed below.`,
+      `6. In-game: pressing the key opens the door **and** plays the announcement. ✔`,
+      ``,
+      `---`,
+      ``,
+      `## Routes in this mod`,
+      ``,
+      `| # | Route | Destination | Asset | SoundCue | Channel | Key |`,
+      `|---|---|---|---|---|---|---|`,
+      ...manifest.map((m,i) =>
+        `| ${i+1} | ${m.r.name||'—'} | ${m.r.dest||'—'} | \`${m.assetBase}\` | \`SC_${m.assetBase}\` | ${m.ch} | **${m.r.key}** |`
+      ),
+      ``,
+      `---`,
+      ``,
+      `## Adding more routes later`,
+      ``,
+      `1. Go back to the BR Sound Mod Builder, add your new routes and MP3s, re-download the zip.`,
+      `2. Import the new WAVs into the same UE4 project and repackage.`,
+      ``,
+      `*The more routes you share with others, the better! Post your .pak on the Brick Rigs Discord.*`,
+    ];
+
+    root.file('README.md', lines.join('\n'));
+
+    setStatus('Compressing…');
+    setProgress(85);
+
+    const blob = await zip.generateAsync({ type:'blob', compression:'DEFLATE', compressionOptions:{ level:6 } });
+
+    setProgress(100);
+
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = modName + '_BRSoundMod.zip';
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 8000);
+
+    setStatus(`✔ Downloaded ${modName}_BRSoundMod.zip — ${routes.length} route(s).`, 'ok');
+
+  } catch(err) {
+    setStatus('Error: ' + err.message, 'err');
+    console.error(err);
+  }
+
+  btn.disabled = false;
+  setTimeout(() => pw.classList.remove('visible'), 1500);
+}
+
+// Start with one example route
+addRoute({ name:'43C', dest:'Denton', key:'X' });
+</script>
+</body>
+</html>
